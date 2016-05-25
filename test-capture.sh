@@ -8,7 +8,7 @@ function whatever {
     return 42
 }
 
-#source <(capture x1 x2 x3 := whatever "hello \"friends")
-eval $(capture x1 x2 x3 := whatever "hello \"friends")
-echo "x1:$x1 x2:$x2 x3:$x3"
+#source <(capture ret out err := whatever "hello \"friends")
+eval $(capture ret out err := whatever "hello \"friends")
+echo "ret:$ret out:$out err:$err"
 
