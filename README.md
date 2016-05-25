@@ -96,9 +96,9 @@ In case of success, the program should just continue and use the command's outpu
 
 In order to facilitate program behaviour that effectively handles error conditions, we can use the `capture` function:
 
+```bash
 #!/usr/bin/env bash
 
-```bash
 source altcalconv.sh
 
 function mycommand {
@@ -132,18 +132,20 @@ But then again, since the Church of the Anti-Eval Fanatics insist that eval is e
 
 In the following example, the capture function will inject local variables in a function, instead of global ones:
 
-    function myfunction {
+```bash
+function myfunction {
 
-        source <(capture local returnCode output errors := mycommand "hello friends")
+    source <(capture local returnCode output errors := mycommand "hello friends")
 
-        if equal $returnCode 0 ; then
-            echo "success"
-            echo "this is the output: $output"
-        else
-            echo "failure, these are the error messages: $errors"
-        fi        
+    if equal $returnCode 0 ; then
+        echo "success"
+        echo "this is the output: $output"
+    else
+        echo "failure, these are the error messages: $errors"
+    fi        
 
-    }
+}
+```
 
 Note that bash does not allow the use the keyword `local` outside function bodies. Therefore, injecting local variables in the global namespace will lead to an error message.
 
@@ -181,10 +183,11 @@ This transmission mechanism simulates how other programming languages return res
 
 The assign function can also inject local variables instead of global ones. For example:
 
-    function myfunction {
+```bash
+function myfunction {
 
-        eval $(assign local x1 x2 x3 x4 := func2 53)
+    eval $(assign local x1 x2 x3 x4 := func2 53)
 
-    }
-
+}
+```
 
