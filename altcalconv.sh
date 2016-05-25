@@ -16,9 +16,8 @@ function assign {
         shift
         local local=local
     fi
-    local vars=$(_callingDealWithVars "$local" "local var=\$(__pop idx)" "$@")
-    local assign_shift=$(selfSharedMemLoad assign_shift)
-    shift $assign_shift
+    read -r toShift vars <<< $(_callingDealWithVars "$local" "local var=\$(__pop idx)" "$@")
+    shift $toShift
     exitIfDifferent $1 := ":= expected"
     shift
     local command=$(_callingDealWithCommand "$@")
@@ -65,23 +64,6 @@ function stderr {
     >&2 echo "$@"
 }
 
-function selfSharedMemSave {
-    local varName=$1
-    local varValue="$2"
-    echo "$varValue" > /dev/shm/$varName.$_pid        
-}
-
-function selfSharedMemLoad {
-    local varName=$1
-    local varValue=$(cat /dev/shm/$varName.$_pid)
-    echo "$varValue"
-}
-
-function selfSharedMemRemove {
-    local varName=$1
-    rm -f /dev/shm/$varName.$_pid
-}
-
 function exitIfDifferent {
     if ! equal "$1" "$2"; then
         stderr "$3"
@@ -97,7 +79,7 @@ function exitIfEmpty {
 }
 
 #------------------------------------------------------
-# private functions
+# private implementation
 #------------------------------------------------------
 
 _pid=$$
@@ -125,12 +107,16 @@ function _callingDealWithVars {
         if equal $# 0 ; then
             break
         fi
-        local varClause=$(echo "$varTemplate" | sed -e "s/local/$local/g" -e "s/var/$1/g" -e "s/idx/$i/g" )
+        local varClause=$(echo "$varTemplate" | \
+                    sed -e "s/local/$local/g" -e "s/var/$1/g" -e "s/idx/$i/g" )
         local vars=$(append "$vars" "; " "$varClause")
         shift
         ((i=i+1))
     done
-    selfSharedMemSave assign_shift $i
+    if equal $i 0 ; then
+        stderr "error: no variables available to assign to"
+    fi
+    echo $i
     echo "$vars"
 }
 

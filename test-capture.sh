@@ -2,13 +2,12 @@
 
 source altcalconv.sh
 
-function whatever {
-    echo "whatever $1 to stdout"
-    stderr "whatever $1 to stderr"
+function mycommand {
+    echo "mycommand $1 to stdout"
+    stderr "mycommand $1 to stderr"
     return 42
 }
 
-#source <(capture ret out err := whatever "hello \"friends")
-eval $(capture ret out err := whatever "hello \"friends")
+eval $(capture ret out err := mycommand "hello friends")
 echo "ret:$ret out:$out err:$err"
 
