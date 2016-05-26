@@ -4,7 +4,7 @@ Alternative function calling conventions for use in Bash
 
 ## 1. Classical calling convention in Bash
 
-Classically, Both `functions` and `programs` in Bash are `commands` that accept input and produce output in pretty much the same way. There are alternatives to this, but this is how it generally works:
+Both `functions` and `programs` in Bash are `commands` that accept input and produce output in pretty much the same way. There are alternatives to this, but this is how it generally works:
 
     (returnCode,stdout,stderr) = command(arguments,stdin,env)
 
@@ -77,7 +77,7 @@ Note that both `stdout` and `stderr` are both dumped in the terminal. So, you te
 
 ### 1.3. Processing the output of a command
 
-One not so good but widespread habit in shell programming, is to forget looking at the return code for a command and to handle errors. Many shell scripts just continue with the next command if an error has occurred. Quite often, success of the previous command was really needed for the next command. Otherwise, why execute such command, if it does not matter that it went right? In that case, spare yourself the trouble and do not execute it at all, I would say.
+One not so good but widespread habit in shell programming, is to forget looking at the return code for a command or to forget to handle errors. Many shell scripts just continue with the next command if an error has occurred. Quite often, success of the previous command was really needed for the next command. Otherwise, why execute such command, if it does not matter that it went right? In that case, spare yourself the trouble and do not execute it at all, I would say.
 
 Outside programs, even on different systems could execute a command and desire to know what in what status it ended up:
 
@@ -88,13 +88,13 @@ Outside programs, even on different systems could execute a command and desire t
     nextCommand arg arg ...
     nextCommand arg arg ...
 
-In case of success, the program should just continue and use the command's output. In case of failure, it should take a different route and use the command's error message on stderr.
+In case of success, the program should just continue and use the command's output. In case of failure, it should take a different route and take into account the command's error message on stderr.
 
 ## 2. Simultaneously capturing all output
 
 ### 2.1. The capture function
 
-In order to facilitate program behaviour that effectively handles error conditions, we can use the `capture` function:
+In order to facilitate program behaviour that effectively handles error conditions, the `altcalconv.sh` script the `capture` function:
 
 ```bash
 #!/usr/bin/env bash
@@ -119,7 +119,7 @@ echo "err:$err"
     out:mycommand hello friends to stdout
     err:mycommand hello friends to stderr
 
-The `capture` function will capture the output of `mycommand "hello friends"` into three variables of which you can choose the names.
+The `capture` function will capture the output of the `mycommand "hello friends"` command into three variables of which you can choose the names.
 
 By the way, the expression:
 
@@ -154,13 +154,13 @@ function myfunction {
 }
 ```
 
-Note that Bash does not allow for the use the keyword `local` outside function bodies. Therefore, injecting local variables into the global namespace will lead to an error message.
+Note that Bash does not allow for the use the keyword `local` outside function bodies. Therefore, injecting local variables into the global namespace will lead to Bash reprimanding you.
 
 ## 3. A more traditional calling convention
 
 ### 3.1. The assign and transmit functions
 
-Sometimes, you may wish that you could use a more traditional way of using functions in Bash. The `transmit` and `assign` combo allows you to do. For example:
+Sometimes, you may wish that you could use a more traditional way of using functions in Bash. The `transmit` and `assign` combo allows you to do this. For example:
 
 ```bash
 #!/usr/bin/env bash
@@ -189,15 +189,15 @@ You can obviously also use the alternative syntax, using process substitution:
 
     source <(assign x1 x2 x3 x4 := func2 53)
 
-This function result transmission mechanism quite simulates how other programming languages return results from the function called, the callee, to the caller.
+This function result transmission mechanism quite simulates how other programming languages return results from the callee to the caller.
 
 The `transmit` function creates a (temporary) stack, and pushes the values transmitted onto this stack. The `assign` function pops these results from the stack, assigns them to the variables mentioned, and then clears the stack.
 
-Of course, it does not simulate the practice in truly native programs, to use CPU registers as locations on the top of the stack, in order to speed up the calling convention.
+Of course, it does not simulate the practice in truly native programs to use CPU registers as the top locations of the stack, in order to speed up the calling convention.
 
-Since the calling convention triangulates over exactly one global stack data structure, just like in the real world, it would not be thread safe, but neither is it in the real world, where each thread must also have its own stack.
+Since the calling convention triangulates over exactly one global stack data structure, just like in the real world, it is not thread safe, just like in the real world, where each thread must also have its own stack.
 
-By the way, contrary to popular belief, it is most likely possible to use threads in Bash. You could try with [ctypes.sh](https://github.com/taviso/ctypes.sh) to load the [pthread](http://man7.org/linux/man-pages/man7/pthreads.7.html) library, and use its functions to control your threads. If you intend to do that, you will have to modify the (rather short) code of the `_pid()` function to take into account the thread identifier. From there on, it should be thread safe.
+By the way, contrary to popular belief, it is most likely possible to use threads in Bash. You could try with [ctypes.sh](https://github.com/taviso/ctypes.sh) to load the [pthread](http://man7.org/linux/man-pages/man7/pthreads.7.html) library, and use its functions to control your threads. If you intend to do that, you will have to modify the implementation of the altcalconv.sh `_pid()` function to take into account the thread identifier. From there on, it should be thread safe.
 
 ### 3.2. Injecting local versus global variables
 
@@ -219,9 +219,9 @@ Therefore, the classical function calling convention in Bash certainly has its u
 
 A disadvantage of this policy is that functions in Bash do not work like functions in other programming languages.
 
-At the basis, I still very much like this classical policy, because it potentially allows for an error-handling style that is superior to traditional exception handling. The only problem is that you have to take tight control over the command's output, like with the `capture` function. If you don't do that, error handling could actually turn out to be worse than in an exception-handling context. So, the approach indeed has much better potential, but you will still have to make it happen.
+At the basis, I very much like the classical policy, because it potentially allows for an error-handling style that is superior to traditional exception handling. The only problem is that you have to take tight control over the command's output, like with the `capture` function. If you don't do that, error handling could actually turn out to be worse than in an exception-handling context. So, the approach indeed has much better potential, but you will still have to make it happen.
 
-Since everything revolves around processes in Bash, just like in the underlying OS itself, Bash has the advantage that it will automatically enlist all your machine cores to execute your program when it would be beneficial to do so. There is no need to use external libraries or commands to schedule co-routines or to spread the load across different cpus.
+Since everything revolves around processes in Bash, just like in the underlying OS itself, Bash has the advantage that it will automatically enlist all your machine cores to execute your program when it would be beneficial to do so. There is no need to use external libraries or commands to schedule co-routines or to spread the load across different CPUs.
 
 Incessant process creation indeed causes overhead, but so does function call setup in other scripting languages. It is not that this would be for free either. Furthermore, in Bash, it is trivially easy to distribute processes across different machines across the internet. Instead of writing:
 
@@ -233,9 +233,17 @@ Just write:
 
 I personally think that Bash is badly underrated.
 
-I consider it to be a valid substitute for other scripting languages such as perl, python, php, lua, or javascript. For all practical purposes, its functions are first class. At its core, it uses quite a pure list notation: `command arg1 arg2 arg3 ...`, allowing for nested expressions through the use of different types of parentheses: `command1 arg11 $(command2 arg21 arg22 arg23 ... ) arg13 arg14 ...`, with the command substitution parenthesising type, `$()`, being clearly the most important one, since command output on `stdout` is rightfully considered to be the most important one.
+I consider it to be a valid substitute for other scripting languages such as perl, python, php, lua, or javascript. For all practical purposes, its functions are first class. At its core, it uses a pure list notation: 
 
-Fixing Bash, is mostly a question of just adding a few sanitizing functions to bury its sometimes strange notational impurities behind a purer list notation, and suppress unnecessary syntactic noise. For example, I do not use:
+    command arg1 arg2 arg3 ...
+
+allowing for nested expressions through the use of different types of parentheses: 
+
+    command1 arg11 $(command2 arg21 arg22 arg23 ... ) arg13 arg14 ...
+
+with the command substitution parenthesis type, `$()`, being clearly the most important one, since command output on `stdout` is rightfully considered to be the most important one.
+
+Fixing Bash, is mostly a question of just adding a few sanitizing functions to bury its sometimes strange notational impurities behind a purer list notation, and to suppress unnecessary syntactic noise. For example, I do not use:
 
     if [ -z $string ] ; then
         ...
@@ -256,6 +264,7 @@ I prefer the looks of this notational purity. It is a quiet syntax, and self-evi
     fi 
 
 or:
+
     if list; expression1 ; expression2; ...; fi 
 
 Therefore, the `then` keyword is one of the few unfortunate, mandatory impurities in the Bash language grammar.
@@ -282,9 +291,9 @@ or:
 
 if `g` happens to take more arguments than just a list.
 
-Lots of issues can be solved just be prepending an additional function to the list. A typical incantation in bash:
+Lots of issues can be solved just be prepending an additional function to the list. A typical incantation in Bash:
 
-    command arg1 arg2 arg3 2>&1 > /dev/null
+    command arg1 arg2 arg3 &> /dev/null
 
 Can easily be made much quieter by implementing something like a `shutUp` function, and replace the expression above by:
 
@@ -302,7 +311,7 @@ function shutUp {
 }
 ```
 
-As you can see, the `shutUp` function concentrates syntactical noise that would otherwise just run loose in your program. In fact, source code written in Bash can be very much sanitized to the point where only few notational impurities are left, along with the occasional unnecessary conceptual burden.
+As you can see, the `shutUp` function concentrates syntactic noise that would otherwise just run loose in your own program. In fact, source code written in Bash can be very much sanitized to the point where only few notational impurities are left, along with the occasional unnecessary conceptual burden.
 
 That can certainly produce a rather pleasantly quiet impression in Bash source code, in fact, much quieter than in other scripting languages, of which the noise of their Eulerian notation is fundamentally beyond repair.
 
