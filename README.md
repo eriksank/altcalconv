@@ -34,11 +34,10 @@ We feed the `hello` string as a stream to the `sed` command, asking it to replac
 
 You may feed environment variables to the command. For example:
 
-    $ myvar=12 echo "whatever: $myvar"
+    $ env myvar=12 echo "whatever: $myvar"
     whatever: 12
 
 By feeding the environment variable `myvar` to the echo command, it will be able to resolve its value and use it inside the program.
-
 
 ## 1.2. Program outputs
 
