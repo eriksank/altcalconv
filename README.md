@@ -192,7 +192,7 @@ The `transmit` function creates a (temporary) stack, and pushes the values trans
 
 Of course, it does not simulate the practice in truly native programs to use CPU registers as the top locations of the stack, in order to speed up the calling convention.
 
-Since the calling convention triangulates over exactly one global stack data structure, just like in the real world, it is not thread safe, just like in the real world, where each thread must also have its own stack.
+Since the calling convention triangulates over exactly one global stack data structure, just like in the real world, it is not thread safe, where each thread must also have its own stack.
 
 By the way, contrary to popular belief, it is most likely possible to use threads in Bash. You could try with [ctypes.sh](https://github.com/taviso/ctypes.sh) to load the [pthread](http://man7.org/linux/man-pages/man7/pthreads.7.html) library, and use its functions to control your threads. If you intend to do that, you will have to modify the implementation of the altcalconv.sh `_pid()` function to take into account the thread identifier. From there on, it should be thread safe.
 
