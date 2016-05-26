@@ -289,7 +289,7 @@ or:
 
     g $(f x1 x2 x3)
 
-if `g` happens to take more arguments than just a list.
+if `g` happens to take more arguments than just a list, or if the arguments to `g` are generally supposed to be evaluated already.
 
 Lots of issues can be solved just be prepending an additional function to the list. A typical incantation in Bash:
 
