@@ -1,11 +1,12 @@
 # altcalconv
-Alternative function calling conventions for use in bash
 
-## 1. Classical calling convention in bash
+Alternative function calling conventions for use in Bash
 
-Classically, Both `functions` and `programs` in bash are `commands` that accept input and produce output in pretty much the same way. There are alternatives to this, but this is how it generally works:
+## 1. Classical calling convention in Bash
 
-    (returnCode,stdout,stderr) = command(args,stdin,env)
+Classically, Both `functions` and `programs` in Bash are `commands` that accept input and produce output in pretty much the same way. There are alternatives to this, but this is how it generally works:
+
+    (returnCode,stdout,stderr) = command(arguments,stdin,env)
 
 ## 1.1. Program inputs
 
@@ -70,14 +71,14 @@ The error messages for the program go to `stderr`. For example, when `ls` cannot
     ls: cannot access some-file-not-there.txt: No such file or directory
     returned: 2
  
-Note that both `stdout` and `stderr` are dumped into the terminal. So, you tend to see both intermixed, even though they are separate streams. If we mute `stderr`, you can see:
+Note that both `stdout` and `stderr` are both dumped in the terminal. So, you tend to see both intermixed, even though they are separate streams. If we mute `stderr`, you can see:
 
     $ ls some-file-not-there.txt 2> /dev/null ; echo "returned: $?"
     returned: 2
 
 ### 1.3. Processing the output of a command
 
-One not so good but widespread habit in shell programming, is to forget looking at the return code for a command and to handle errors. Many shell scripts just continue with the next command if an error has occurred. Quite often, success of the previous command was really needed for the next command; otherwise, why execute such command, if it does not matter than it went right? 
+One not so good but widespread habit in shell programming, is to forget looking at the return code for a command and to handle errors. Many shell scripts just continue with the next command if an error has occurred. Quite often, success of the previous command was really needed for the next command. Otherwise, why execute such command, if it does not matter that it went right? In that case, spare yourself the trouble and do not execute it at all, I would say.
 
 Outside programs, even on different systems could execute a command and desire to know what in what status it ended up:
 
@@ -109,14 +110,19 @@ function mycommand {
 
 source <(capture ret out err := mycommand "hello friends")
 
-echo "ret:$ret out:$out err:$err"
+echo "ret:$ret"
+echo "out:$out"
+echo "err:$err"
+
 ```
     output:
-    ret:42 out:mycommand hello friends to stdout err:mycommand hello friends to stderr
+    ret:42
+    out:mycommand hello friends to stdout
+    err:mycommand hello friends to stderr
 
 The `capture` function will capture the output of `mycommand "hello friends"` into three variables of which you can choose the names.
 
-The expression:
+By the way, the expression:
 
     source <(capture ret out err := mycommand "hello friends")
 
@@ -124,9 +130,11 @@ and:
 
     eval $(capture ret out err := mycommand "hello friends")
 
-are equivalent. However, the `eval` version will produce better error messages in case of issues.
+are equivalent.
 
-But then again, since the Church of the Anti-Eval Fanatics insist that eval is evil, and since they have never successfully managed to demonize the source command too (that would probably be another church with another doctrine), you may still want to use source instead of eval, and in that way avoid embarrassing accusations of heresy.
+However, the `eval` version will produce better error messages in case of issues.
+
+But then again, since the Church of the Anti-Eval Fanatics insist that `eval` is evil, while they have never successfully managed to also demonize the use of the `source` command (that would probably be another church with another doctrine), you may still want to use `source` instead of `eval`, and in that way avoid embarrassing accusations of heresy.
 
 ### 2.2. Injecting local versus global variables
 
@@ -147,13 +155,13 @@ function myfunction {
 }
 ```
 
-Note that bash does not allow the use the keyword `local` outside function bodies. Therefore, injecting local variables in the global namespace will lead to an error message.
+Note that Bash does not allow for the use the keyword `local` outside function bodies. Therefore, injecting local variables into the global namespace will lead to an error message.
 
 ## 3. A more traditional calling convention
 
 ### 3.1. The assign and transmit functions
 
-Sometimes, you may wish that you could use a more traditional way of using functions in Bash. The `transmit` and `assign` combo allows you to do example that:
+Sometimes, you may wish that you could use a more traditional way of using functions in Bash. The `transmit` and `assign` combo allows you to do. For example:
 
 ```bash
 #!/usr/bin/env bash
@@ -166,18 +174,31 @@ function func2 {
 
 eval $(assign x1 x2 x3 x4 := func2 53)
 
-echo "x1:$x1 x2:$x2 x3:$x3 x4:$x4"
+echo "x1:$x1"
+echo "x2:$x2"
+echo "x3:$x3"
+echo "x4:$x4"
 
 ```
     output:
-    x1:4 x2:3 x3:12 x4:152
+    x1:4
+    x2:3
+    x3:12
+    x4:152
 
-
-You can obviously also use the alternative syntax using process substitution:
+You can obviously also use the alternative syntax, using process substitution:
 
     source <(assign x1 x2 x3 x4 := func2 53)
 
-This transmission mechanism simulates how other programming languages return results from the function called, the callee, to the caller. The transmit function creates a (temporary) stack, and pushes the values transmitted onto this stack. The assign function pops these results from the stack, assigns them to the variables mentioned, and then clears the stack.
+This function result transmission mechanism quite simulates how other programming languages return results from the function called, the callee, to the caller.
+
+The `transmit` function creates a (temporary) stack, and pushes the values transmitted onto this stack. The `assign` function pops these results from the stack, assigns them to the variables mentioned, and then clears the stack.
+
+Of course, it does not simulate the practice in truly native programs, to use CPU registers as locations on the top of the stack, in order to speed up the calling convention.
+
+Since the calling convention triangulates over exactly one global stack data structure, just like in the real world, it would not be thread safe, but neither is it in the real world, where each thread must also have its own stack.
+
+By the way, contrary to popular belief, it is most likely possible to use threads in Bash. You could try with [ctypes.sh](https://github.com/taviso/ctypes.sh) to load the [pthread](http://man7.org/linux/man-pages/man7/pthreads.7.html) library, and use its functions to control your threads. If you intend to do that, you will have to modify the (rather short) code of the `_pid()` function to take into account the thread identifier. From there on, it should be thread safe.
 
 ### 3.2. Injecting local versus global variables
 
@@ -190,4 +211,101 @@ function myfunction {
 
 }
 ```
+
+### 4. Difference between functions and programs
+
+Seen from the outside, an external program and a function look the same to their users. Unless you try to figure it out, you cannot know if a command has been implemented as a function or as an external program. The advantage of this policy is that programs and functions are (almost) perfectly interchangeable.
+
+Therefore, the classical function calling convention in Bash certainly has its unique advantages.
+
+A disadvantage of this policy is that functions in Bash do not work like functions in other programming languages.
+
+At the basis, I still very much like this classical policy, because it potentially allows for an error-handling style that is superior to traditional exception handling. The only problem is that you have to take tight control over the command's output, like with the `capture` function. If you don't do that, error handling could actually turn out to be worse than in an exception-handling context. So, the approach indeed has much better potential, but you will still have to make it happen.
+
+Since everything revolves around processes in Bash, just like in the underlying OS itself, Bash has the advantage that it will automatically enlist all your machine cores to execute your program when it would be beneficial to do so. There is no need to use external libraries or commands to schedule co-routines or to spread the load across different cpus.
+
+Incessant process creation indeed causes overhead, but so does function call setup in other scripting languages. It is not that this would be for free either. Furthermore, in Bash, it is trivially easy to distribute processes across different machines across the internet. Instead of writing:
+
+    command arg1 arg2 arg3 ...
+
+Just write:
+
+    ssh user@server command arg1 arg2 arg3 ...
+
+I personally think that Bash is badly underrated.
+
+I consider it to be a valid substitute for other scripting languages such as perl, python, php, lua, or javascript. For all practical purposes, its functions are first class. At its core, it uses quite a pure list notation: `command arg1 arg2 arg3 ...`, allowing for nested expressions through the use of different types of parentheses: `command1 arg11 $(command2 arg21 arg22 arg23 ... ) arg13 arg14 ...`, with the command substitution parenthesising type, `$()`, being clearly the most important one, since command output on `stdout` is rightfully considered to be the most important one.
+
+Fixing Bash, is mostly a question of just adding a few sanitizing functions to bury its sometimes strange notational impurities behind a purer list notation, and suppress unnecessary syntactic noise. For example, I do not use:
+
+    if [ -z $string ] ; then
+        ...
+    fi
+
+The standard bracketing is too noisy to my taste. Furthermore, I reject the conceptual burden of remembering what `-z` may mean. I just don't. I refuse to be bullied. Therefore, I have implemented a wrapper, that causes the code to look like this:
+
+    if empty $string ; then
+        ...
+    fi
+
+I prefer the looks of this notational purity. It is a quiet syntax, and self-evident for that matter. Unfortunately, the `then` keyword is not optional. It is mandatory, even though it is redundant. The language would perfectly be unambiguous without:
+
+    if list 
+        expression1
+        expression2
+        ...
+    fi 
+
+or:
+    if list; expression1 ; expression2; ...; fi 
+
+Therefore, the `then` keyword is one of the few unfortunate, mandatory impurities in the Bash language grammar.
+
+Out of the box, the Euler notation typically in use in other scripting languages:
+
+    f(x1,x2,x3)
+
+Is much more noisy than the quiet list notation in use in Bash:
+
+    f x1 x2 x3
+
+Chaining function applications, is much cleaner in list notation than in Euler notation:
+
+    g(f(x1,x2,x3))
+
+versus:
+
+    g f x1 x2 x3
+
+or:
+
+    g $(f x1 x2 x3)
+
+if `g` happens to take more arguments than just a list.
+
+Lots of issues can be solved just be prepending an additional function to the list. A typical incantation in bash:
+
+    command arg1 arg2 arg3 2>&1 > /dev/null
+
+Can easily be made much quieter by implementing something like a `shutUp` function, and replace the expression above by:
+
+    shutUp command arg1 arg2 arg3
+
+Such `shutUp` function, that can also handle input on stdin, could look like this:
+
+```bash
+function shutUp {
+    if test -s /dev/stdin ; then
+        cat /dev/stdin | "$@" &> /dev/null
+    else
+        "$@" &> /dev/null
+    fi
+}
+```
+
+As you can see, the `shutUp` function concentrates syntactical noise that would otherwise just run loose in your program. In fact, source code written in Bash can be very much sanitized to the point where only few notational impurities are left, along with the occasional unnecessary conceptual burden.
+
+That can certainly produce a rather pleasantly quiet impression in Bash source code, in fact, much quieter than in other scripting languages, of which the noise of their Eulerian notation is fundamentally beyond repair.
+
+Seeking to establish more notational purity in Bash, would certainly contribute to unleashing its amazing true potential.
 

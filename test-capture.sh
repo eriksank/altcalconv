@@ -9,5 +9,7 @@ function mycommand {
 }
 
 eval $(capture ret out err := mycommand "hello friends")
-echo "ret:$ret out:$out err:$err"
+echo "ret:$ret"
+echo "out:$out"
+echo "err:$err"
 

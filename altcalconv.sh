@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
 
 #------------------------------------------------------
+# fix the _pid variable once 
+#------------------------------------------------------
+
+#fix this, if you ever want to support multithreading
+__pid=$$
+function _pid {
+    return $__pid
+}
+
+#------------------------------------------------------
 # main exports
 #------------------------------------------------------
 
 function transmit {
-    declare -ag __stack__=()
+    eval "declare -ag $(_pid)__stack__=()"
     for i in $@; do
-        __stack__+=("$i")
+        eval "$(_pid)__stack__+=(\"$i\")"
     done
 }
 
@@ -82,10 +92,8 @@ function exitIfEmpty {
 # private implementation
 #------------------------------------------------------
 
-_pid=$$
-
 function __pop {
-    echo "${__stack__[$1]}"
+    eval echo \${$(_pid)__stack__[$1]}
 }
 
 function _callingDealWithLocal {
