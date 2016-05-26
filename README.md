@@ -36,8 +36,6 @@ You may feed environment variables to the command. For example:
 
     $ env DISPLAY=:0 xeyes
 
-By feeding the environment variable `myvar` to the echo command, it will be able to resolve its value and use it inside the program.
-
 ## 1.2. Program outputs
 
 ### 1.2.1. return code
