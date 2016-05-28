@@ -134,7 +134,7 @@ But then again, since the Church of the Anti-Eval Fanatics insists that `eval` i
 
 ### 2.2. Injecting local versus global variables
 
-In the following example, the capture function will inject local variables in a function, instead of global ones:
+In the following example, the `capture` function will inject local variables in a function, instead of global ones:
 
 ```bash
 function myfunction {
@@ -157,7 +157,7 @@ Note that Bash does not allow for the use the keyword `local` outside function b
 
 ### 3.1. The assign and transmit functions
 
-Sometimes, you may wish that you could use a more traditional way of using functions in Bash. The `transmit` and `assign` combo allows you to do this. For example:
+Sometimes, you may wish that you could use a more traditional way of applying functions in Bash. The `transmit` and `assign` combo allows you to do this. For example:
 
 ```bash
 #!/usr/bin/env bash
@@ -182,11 +182,11 @@ echo "x4:$x4"
     x3:12
     x4:152
 
-You can obviously also use the alternative syntax, using process substitution:
+You can obviously also use the alternative syntax that is based on process substitution:
 
     source <(assign x1 x2 x3 x4 := func2 53)
 
-This function result transmission mechanism quite simulates how other programming languages return results from the callee to the caller.
+This 'function result transmission mechanism' quite simulates how other programming languages return results from the callee to the caller.
 
 The `transmit` function creates a (temporary) stack, and pushes the values transmitted onto this stack. The `assign` function pops these results from the stack, assigns them to the variables mentioned, and then clears the stack.
 
@@ -252,7 +252,7 @@ The standard bracketing is too noisy to my taste. Furthermore, I reject the conc
         ...
     fi
 
-I prefer the looks of this notational purity. It is a quiet syntax, and self-evident for that matter. Unfortunately, the `then` keyword is not optional. It is mandatory, even though it is redundant. The language would be perfectly unambiguous without:
+I prefer the looks of this kind of notational purity. It is a quiet syntax, and self-evident for that matter. Unfortunately, the `then` keyword is not optional. It is mandatory, even though it is redundant. The language would be perfectly unambiguous without:
 
     if list 
         expression1
