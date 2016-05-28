@@ -288,7 +288,7 @@ or:
 
 if `g` happens to take more arguments than just a list, or if the arguments to `g` are generally supposed to be evaluated already.
 
-Lots of issues can be solved just be prepending an additional function to the list. A typical incantation in Bash:
+Lots of issues can be solved just by prepending an additional function to the list. A typical incantation in Bash:
 
     command arg1 arg2 arg3 &> /dev/null
 
