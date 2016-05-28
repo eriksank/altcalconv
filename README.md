@@ -91,7 +91,7 @@ In case of success, the program should just continue and use the command's outpu
 
 ### 2.1. The capture function
 
-In order to facilitate program behaviour that effectively handles error conditions, the `altcalconv.sh` script the `capture` function:
+In order to facilitate program behaviour that effectively handles error conditions, the `altcalconv.sh` script implements the `capture` function:
 
 ```bash
 #!/usr/bin/env bash
