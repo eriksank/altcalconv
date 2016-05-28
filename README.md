@@ -130,7 +130,7 @@ are equivalent.
 
 However, the `eval` version will produce better error messages in case of issues.
 
-But then again, since the Church of the Anti-Eval Fanatics insist that `eval` is evil, while they have never successfully managed to also demonize the use of the `source` command (that would probably be another church with another doctrine), you may still want to use `source` instead of `eval`, and in that way avoid embarrassing accusations of heresy.
+But then again, since the Church of the Anti-Eval Fanatics insists that `eval` is evil, while they have never successfully managed to also demonize the use of the `source` command (that would probably be another church with another doctrine), you may still want to use `source` instead of `eval`, and in that way avoid embarrassing accusations of heresy.
 
 ### 2.2. Injecting local versus global variables
 
